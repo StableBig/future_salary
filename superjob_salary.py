@@ -8,13 +8,14 @@ load_dotenv()
 SUPERJOB_API_KEY = os.getenv("SUPERJOB_API_KEY")
 
 
-def get_vacancy_titles():
+def get_programmer_vacancies():
     url = "https://api.superjob.ru/2.0/vacancies/"
     headers = {
         "X-Api-App-Id": SUPERJOB_API_KEY
     }
 
     params = {
+        "keyword": "Программист",
         "town": "Москва",
         "count": 20
     }
@@ -24,11 +25,12 @@ def get_vacancy_titles():
     if response.status_code == 200:
         vacancies = response.json().get("objects", [])
 
-        # Выводим названия вакансий
         for vacancy in vacancies:
-            print(vacancy.get("profession"))
+            profession = vacancy.get("profession")
+            town = vacancy.get("town", {}).get("title")
+            print(f"{profession}, {town}")
     else:
         print(f"Ошибка при запросе: {response.status_code}")
 
 
-get_vacancy_titles()
+get_programmer_vacancies()
