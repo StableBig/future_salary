@@ -17,21 +17,45 @@ def predict_rub_salary(vacancy):
     return None
 
 
-url = "https://api.hh.ru/vacancies"
-search_params = {
-    "text": "Программист Python",
-    "area": 1,
-    "date_from": "2024-10-10",
-    "per_page": 20
-}
+def get_vacancy_statistics(language):
+    url = "https://api.hh.ru/vacancies"
+    search_params = {
+        "text": f"Программист {language}",
+        "area": 1,
+        "date_from": "2024-10-10",
+        "per_page": 20
+    }
 
-response = requests.get(url, params=search_params)
+    response = requests.get(url, params=search_params)
+    if response.status_code != 200:
+        print(f"Ошибка при запросе для {language}: {response.status_code}")
+        return None
 
-if response.status_code == 200:
-    vacancies = response.json().get("items", [])
+    vacancies = response.json()
+    salaries = []
 
-    for vacancy in vacancies:
-        expected_salary = predict_rub_salary(vacancy)
-        print(expected_salary)
-else:
-    print(f"Ошибка при запросе: {response.status_code}")
+    for vacancy in vacancies.get("items", []):
+        salary = predict_rub_salary(vacancy)
+        if salary:
+            salaries.append(salary)
+
+    vacancies_found = vacancies.get("found", 0)
+    vacancies_processed = len(salaries)
+    average_salary = int(sum(salaries) / vacancies_processed) if vacancies_processed > 0 else None
+
+    return {
+        "vacancies_found": vacancies_found,
+        "vacancies_processed": vacancies_processed,
+        "average_salary": average_salary
+    }
+
+
+languages = ["Python", "Java", "JavaScript", "C++", "C#", "Ruby", "PHP", "Swift", "Go", "Kotlin"]
+language_statistics = {}
+
+for language in languages:
+    stats = get_vacancy_statistics(language)
+    if stats:
+        language_statistics[language] = stats
+
+print(language_statistics)
