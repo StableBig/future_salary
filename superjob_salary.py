@@ -1,5 +1,6 @@
 import os
 import requests
+import time
 from dotenv import load_dotenv
 
 
@@ -18,43 +19,65 @@ def predict_salary(salary_from, salary_to):
     return None
 
 
-def predict_rub_salary_hh(vacancy):
-    salary_info = vacancy.get("salary")
-    if salary_info and salary_info.get("currency") == "RUR":
-        return predict_salary(salary_info.get("from"), salary_info.get("to"))
-    return None
-
-
 def predict_rub_salary_sj(vacancy):
     if vacancy.get("currency") == "rub":
         return predict_salary(vacancy.get("payment_from"), vacancy.get("payment_to"))
     return None
 
 
-def get_programmer_vacancies_with_salary():
+def get_superjob_vacancies(language):
     url = "https://api.superjob.ru/2.0/vacancies/"
     headers = {
         "X-Api-App-Id": SUPERJOB_API_KEY
     }
+    all_salaries = []
+    page = 0
 
-    params = {
-        "keyword": "Программист",
-        "town": "Москва",
-        "count": 20
-    }
+    while True:
+        params = {
+            "keyword": f"Программист {language}",
+            "town": "Москва",
+            "page": page,
+            "count": 100
+        }
 
-    response = requests.get(url, headers=headers, params=params)
+        response = requests.get(url, headers=headers, params=params)
 
-    if response.status_code == 200:
-        vacancies = response.json().get("objects", [])
+        if response.status_code != 200:
+            print(f"Ошибка при запросе для {language}, страница {page}: {response.status_code}")
+            break
+
+        vacancies_page = response.json()
+        vacancies = vacancies_page.get("objects", [])
+
+        if not vacancies:
+            break
+
+        print(f"Загружаю {language}, страница {page + 1}")
 
         for vacancy in vacancies:
-            profession = vacancy.get("profession")
-            town = vacancy.get("town", {}).get("title")
-            expected_salary = predict_rub_salary_sj(vacancy)
-            print(f"{profession}, {town}, {expected_salary}")
-    else:
-        print(f"Ошибка при запросе: {response.status_code}")
+            salary = predict_rub_salary_sj(vacancy)
+            if salary:
+                all_salaries.append(salary)
+
+        page += 1
+        time.sleep(0.2)
+
+    vacancies_found = vacancies_page.get("total")
+    vacancies_processed = len(all_salaries)
+    average_salary = int(sum(all_salaries) / vacancies_processed) if vacancies_processed > 0 else None
+
+    return {
+        "vacancies_found": vacancies_found,
+        "vacancies_processed": vacancies_processed,
+        "average_salary": average_salary
+    }
 
 
-get_programmer_vacancies_with_salary()
+languages = ["Python", "Java", "JavaScript", "C++", "C#", "Ruby", "PHP", "Swift", "Go", "Kotlin"]
+superjob_statistics = {}
+
+for language in languages:
+    superjob_statistics[language] = get_superjob_vacancies(language)
+
+print(superjob_statistics)
