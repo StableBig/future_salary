@@ -4,9 +4,6 @@ import time
 from dotenv import load_dotenv
 from terminaltables import AsciiTable
 
-load_dotenv()
-SUPERJOB_API_KEY = os.getenv("SUPERJOB_API_KEY")
-
 
 def predict_salary(salary_from, salary_to):
     """Рассчитывает ожидаемую зарплату на основе диапазона."""
@@ -94,7 +91,7 @@ def get_superjob_vacancies(language):
     """Получает все вакансии для указанного языка программирования с SuperJob."""
     url = "https://api.superjob.ru/2.0/vacancies/"
     headers = {
-        "X-Api-App-Id": SUPERJOB_API_KEY
+        "X-Api-App-Id": os.getenv("SUPERJOB_API_KEY")
     }
     all_salaries = []
     page = 0
@@ -161,6 +158,7 @@ def print_statistics_table(title, statistics):
 
 
 def main():
+    load_dotenv()
     languages = ["Python", "Java", "JavaScript", "C++", "C#", "Ruby", "PHP", "Swift", "Go", "Kotlin"]
 
     hh_statistics = {language: get_language_statistics_hh(language) for language in languages}
