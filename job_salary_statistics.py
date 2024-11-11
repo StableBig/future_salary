@@ -81,7 +81,7 @@ def get_language_statistics_hh(language):
     """Возвращает статистику по зарплатам для указанного языка программирования с HeadHunter."""
     all_salaries, vacancies_found = get_all_vacancies_hh(language)
     vacancies_processed = len(all_salaries)
-    average_salary = int(sum(all_salaries) / vacancies_processed) if vacancies_processed > 0 else None
+    average_salary = int(sum(all_salaries) / vacancies_processed) if vacancies_processed else None
 
     return {
         "vacancies_found": vacancies_found,
@@ -133,7 +133,7 @@ def get_superjob_vacancies(language):
 
     vacancies_found = vacancies_page.get("total")
     vacancies_processed = len(all_salaries)
-    average_salary = int(sum(all_salaries) / vacancies_processed) if vacancies_processed > 0 else None
+    average_salary = int(sum(all_salaries) / vacancies_processed) if vacancies_processed else None
 
     return {
         "vacancies_found": vacancies_found,
