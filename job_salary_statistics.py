@@ -53,7 +53,7 @@ def get_all_vacancies_hh(language):
 
         response = requests.get(url, params=search_params)
 
-        if response.status_code != 200:
+        if not response.ok:
             print(f"Ошибка при запросе для {language}, страница {page}: {response.status_code}")
             break
 
@@ -110,7 +110,7 @@ def get_superjob_vacancies(language):
 
         response = requests.get(url, headers=headers, params=params)
 
-        if response.status_code != 200:
+        if not response.ok:
             print(f"Ошибка при запросе для {language}, страница {page}: {response.status_code}")
             break
 
