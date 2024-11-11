@@ -4,13 +4,12 @@ import time
 from dotenv import load_dotenv
 from terminaltables import AsciiTable
 
-
 load_dotenv()
-
 SUPERJOB_API_KEY = os.getenv("SUPERJOB_API_KEY")
 
 
 def predict_salary(salary_from, salary_to):
+    """Рассчитывает ожидаемую зарплату на основе диапазона."""
     if salary_from and salary_to:
         return (salary_from + salary_to) / 2
     elif salary_from:
@@ -21,19 +20,22 @@ def predict_salary(salary_from, salary_to):
 
 
 def predict_rub_salary_hh(vacancy):
-    salary_details = vacancy.get("salary")
-    if salary_details and salary_details.get("currency") == "RUR":
-        return predict_salary(salary_details.get("from"), salary_details.get("to"))
+    """Возвращает ожидаемую зарплату для вакансии с HeadHunter в рублях."""
+    salary_info = vacancy.get("salary")
+    if salary_info and salary_info.get("currency") == "RUR":
+        return predict_salary(salary_info.get("from"), salary_info.get("to"))
     return None
 
 
 def predict_rub_salary_sj(vacancy):
+    """Возвращает ожидаемую зарплату для вакансии с SuperJob в рублях."""
     if vacancy.get("currency") == "rub":
         return predict_salary(vacancy.get("payment_from"), vacancy.get("payment_to"))
     return None
 
 
 def get_all_vacancies_hh(language):
+    """Получает все вакансии для указанного языка программирования с HeadHunter."""
     url = "https://api.hh.ru/vacancies"
     all_salaries = []
     page = 0
@@ -57,7 +59,6 @@ def get_all_vacancies_hh(language):
 
         vacancies_page = response.json()
         vacancies = vacancies_page.get("items", [])
-
         total_pages = vacancies_page.get("pages", 1)
 
         if not vacancies:
@@ -77,6 +78,7 @@ def get_all_vacancies_hh(language):
 
 
 def get_language_statistics_hh(language):
+    """Возвращает статистику по зарплатам для указанного языка программирования с HeadHunter."""
     all_salaries, vacancies_found = get_all_vacancies_hh(language)
     vacancies_processed = len(all_salaries)
     average_salary = int(sum(all_salaries) / vacancies_processed) if vacancies_processed > 0 else None
@@ -89,6 +91,7 @@ def get_language_statistics_hh(language):
 
 
 def get_superjob_vacancies(language):
+    """Получает все вакансии для указанного языка программирования с SuperJob."""
     url = "https://api.superjob.ru/2.0/vacancies/"
     headers = {
         "X-Api-App-Id": SUPERJOB_API_KEY
@@ -113,7 +116,6 @@ def get_superjob_vacancies(language):
 
         vacancies_page = response.json()
         vacancies = vacancies_page.get("objects", [])
-
         total_pages = (vacancies_page.get("total", 0) // 100) + 1
 
         if not vacancies:
@@ -141,6 +143,7 @@ def get_superjob_vacancies(language):
 
 
 def print_statistics_table(title, statistics):
+    """Выводит статистику по языкам программирования в виде таблицы."""
     table_data = [
         ["Язык программирования", "Вакансий найдено", "Вакансий обработано", "Средняя зарплата"]
     ]
@@ -157,10 +160,15 @@ def print_statistics_table(title, statistics):
     print(table.table)
 
 
-languages = ["Python", "Java", "JavaScript", "C++", "C#", "Ruby", "PHP", "Swift", "Go", "Kotlin"]
+def main():
+    languages = ["Python", "Java", "JavaScript", "C++", "C#", "Ruby", "PHP", "Swift", "Go", "Kotlin"]
 
-hh_statistics = {language: get_language_statistics_hh(language) for language in languages}
-print_statistics_table("HeadHunter Moscow", hh_statistics)
+    hh_statistics = {language: get_language_statistics_hh(language) for language in languages}
+    print_statistics_table("HeadHunter Moscow", hh_statistics)
 
-sj_statistics = {language: get_superjob_vacancies(language) for language in languages}
-print_statistics_table("SuperJob Moscow", sj_statistics)
+    sj_statistics = {language: get_superjob_vacancies(language) for language in languages}
+    print_statistics_table("SuperJob Moscow", sj_statistics)
+
+
+if __name__ == "__main__":
+    main()
