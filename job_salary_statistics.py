@@ -38,8 +38,9 @@ def get_all_vacancies_hh(language):
     all_salaries = []
     page = 0
     per_page = 100
+    total_pages = 1
 
-    while True:
+    while page < total_pages:
         search_params = {
             "text": f"Программист {language}",
             "area": 1,
@@ -57,10 +58,12 @@ def get_all_vacancies_hh(language):
         vacancies_page = response.json()
         vacancies = vacancies_page.get("items", [])
 
+        total_pages = vacancies_page.get("pages", 1)
+
         if not vacancies:
             break
 
-        print(f"Загружаю {language}, страница {page + 1}")
+        print(f"Загружаю {language}, страница {page + 1} из {total_pages}")
 
         for vacancy in vacancies:
             salary = predict_rub_salary_hh(vacancy)
@@ -92,8 +95,9 @@ def get_superjob_vacancies(language):
     }
     all_salaries = []
     page = 0
+    total_pages = 1
 
-    while True:
+    while page < total_pages:
         params = {
             "keyword": f"Программист {language}",
             "town": "Москва",
@@ -110,10 +114,12 @@ def get_superjob_vacancies(language):
         vacancies_page = response.json()
         vacancies = vacancies_page.get("objects", [])
 
+        total_pages = (vacancies_page.get("total", 0) // 100) + 1
+
         if not vacancies:
             break
 
-        print(f"Загружаю {language}, страница {page + 1}")
+        print(f"Загружаю {language}, страница {page + 1} из {total_pages}")
 
         for vacancy in vacancies:
             salary = predict_rub_salary_sj(vacancy)
