@@ -21,9 +21,9 @@ def predict_salary(salary_from, salary_to):
 
 def predict_rub_salary_hh(vacancy):
     """Возвращает ожидаемую зарплату для вакансии с HeadHunter в рублях."""
-    salary_info = vacancy.get("salary")
-    if salary_info and salary_info.get("currency") == "RUR":
-        return predict_salary(salary_info.get("from"), salary_info.get("to"))
+    salary_details = vacancy.get("salary")
+    if salary_details and salary_details.get("currency") == "RUR":
+        return predict_salary(salary_details.get("from"), salary_details.get("to"))
     return None
 
 
