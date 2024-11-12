@@ -87,11 +87,11 @@ def get_language_statistics_hh(language):
     }
 
 
-def get_superjob_vacancies(language):
+def get_superjob_vacancies(language, api_key):
     """Получает все вакансии для указанного языка программирования с SuperJob."""
     url = "https://api.superjob.ru/2.0/vacancies/"
     headers = {
-        "X-Api-App-Id": os.getenv("SUPERJOB_API_KEY")
+        "X-Api-App-Id": api_key
     }
     all_salaries = []
     page = 0
@@ -159,12 +159,13 @@ def print_statistics_table(title, statistics):
 
 def main():
     load_dotenv()
+    superjob_api_key = os.getenv("SUPERJOB_API_KEY")
     languages = ["Python", "Java", "JavaScript", "C++", "C#", "Ruby", "PHP", "Swift", "Go", "Kotlin"]
 
     hh_statistics = {language: get_language_statistics_hh(language) for language in languages}
     print_statistics_table("HeadHunter Moscow", hh_statistics)
 
-    sj_statistics = {language: get_superjob_vacancies(language) for language in languages}
+    sj_statistics = {language: get_superjob_vacancies(language, superjob_api_key) for language in languages}
     print_statistics_table("SuperJob Moscow", sj_statistics)
 
 
